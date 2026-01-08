@@ -1,3 +1,8 @@
+# ------------------------------------
+# SCRIPT PARA PROJEÇÃO DO PIB DE SANTA CATARINA ATÉ 2030
+# Modelo simples com base nas elasticidades em relação ao
+# PIB do Brasil, EUA, China, Selic e Câmbio.
+# ------------------------------------
 import polars as pl
 import pandas as pd
 import numpy as np
@@ -9,20 +14,20 @@ from warnings import filterwarnings
 filterwarnings("ignore")
 
 project_root = Path().resolve().parent
-raw_path = project_root / 'data/raw'
-interim_path = project_root / 'data/interim'
-processed_path = project_root / 'data/processed'
-references_path = project_root / 'references'
+raw_path = project_root / 'Dados/Brutos'
+interim_path = project_root / 'Dados/Limpos'
+processed_path = project_root / 'Dados/Processados'
+references_path = project_root / 'Referências'
 
-
-
-
-
-################# CARREGANDO OS DADOS #################
+# ------------------------------------
+# CARREGAMENTO DOS DADOS
+# ------------------------------------
 df_pib_sc_raw = pl.read_excel(raw_path / 'pib_sc.xlsx')
 
 
-################# TRATAMENTO BÁSICO #################
+# ------------------------------------
+# TRATAMENTO E DEFINIÇÃO DAS VARIÁVEIS
+# ------------------------------------
 df_pib_sc_raw = df_pib_sc_raw.with_columns(
     pl.col("ano").cast(pl.Int32),
     pl.col('selic_over').shift(1).alias('selic_over_1'),
@@ -32,17 +37,19 @@ df_pib_sc_raw = df_pib_sc_raw.with_columns(
 df_pib_sc_raw.head()
 
 
-################# REGRESSÃO LOG-LOG #################
+# ------------------------------------
+# REGRESSÃO LOG-LOG PARA CÁLCULO DAS ELASTICIDADES
+# ------------------------------------
 df_pib_sc_pd = df_pib_sc_raw.to_pandas()
 
-expr = 'np.log(pib_sc) ~ np.log(pib_br) + np.log(pib_usa) + np.log(pib_chn) + selic_over_1 + np.log(cambio_uss_1)'
+expr = """
+np.log(pib_sc) ~ np.log(pib_br) + np.log(pib_usa)
+               + np.log(pib_chn) + selic_over_1 + np.log(cambio_uss_1)
+"""
 
 reg_elast = sm.glm(expr, data=df_pib_sc_pd).fit(cov_type='HC0')
 
 print(reg_elast.summary())
-
-
-
 
 
 '''
@@ -66,12 +73,13 @@ CAMBIO USS:
     Todas as projeções são do Boletim Focus.
 '''
 
-
-
-
-
-
-################# DEFINIÇÃO DO CENÁRIO-BASE MACROECONÔMICO #################
+# ------------------------------------
+# Projeção das variáveis explicativas até 2030
+# Aqui são definidas as taxas de crescimento reais para cada variável.
+# É bem manual, com coleta das projeções nas fontes citadas acima.
+# São três cenários: base, pessimista e otimista.
+# Os cenários para câmbio e Selic são definidos na sequência.
+# ------------------------------------
 taxas_base = pd.DataFrame({
     'ano': range(2025, 2031),
     'pib_br': [0.025, 0.02, 0.015, 0.02, 0.02, 0.02],
@@ -101,7 +109,9 @@ ultimo_ano = df_pib_sc_raw.select(pl.col("ano")).to_series()[-1]
 
 valores_atuais = df_pib_sc_raw.filter(pl.col("ano") == ultimo_ano).select(['pib_br', 'pib_usa', 'pib_chn']).to_numpy()[0]
 
-### AQUI SE SELECIONA O CENÁRIO DE PROJEÇÃO DAS VARIÁVEIS EXPLICATIVAS
+# ------------------------------------
+# SELEÇÃO DO CENÁRIO BASE PARA AS PROJEÇÕES DAS VARIÁVEIS EXPLICATIVAS
+# ------------------------------------
 taxas = taxas_base.copy()
 
 ### CRIA UM DATAFRAME VAZIO PARA ARMAZENAR AS PROJEÇÕES
@@ -131,7 +141,9 @@ projs_sc['pib_sc'] = np.exp(reg_elast.predict(projs_sc))
 
 projs_sc.head()
 
-################# CONCATENAÇÃO E EXPORTAÇÃO DOS DADOS #################
+# ------------------------------------
+# CONCATENAÇÃO E EXPORTAÇÃO DOS DADOS
+# ------------------------------------
 df_pib_sc_pd = df_pib_sc_pd.set_index('ano')
 df_concat_sc = pd.concat([df_pib_sc_pd, projs_sc])
 
