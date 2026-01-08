@@ -1,3 +1,7 @@
+# ------------------------------------
+# SCRIPT PARA PROJEÇÃO DO PIB DOS MUNICÍPIOS ATÉ 2030
+# Modelo simples de distribuição das projeções do PIB das mesorregiões
+# ------------------------------------
 import polars as pl
 import pandas as pd
 import numpy as np
@@ -9,17 +13,21 @@ from warnings import filterwarnings
 filterwarnings("ignore")
 
 project_root = Path().resolve().parent
-raw_path = project_root / 'data/raw'
-interim_path = project_root / 'data/interim'
-processed_path = project_root / 'data/processed'
-references_path = project_root / 'references'
+raw_path = project_root / 'Dados/Brutos'
+interim_path = project_root / 'Dados/Limpos'
+processed_path = project_root / 'Dados/Processados'
+references_path = project_root / 'Referências'
 
-################# CARREGANDO OS DADOS #################
+# ------------------------------------
+# CARREGAMENTO DA PROJEÇÃO DAS MESORREGIÕES ATÉ 2030
+# ------------------------------------
 df_pib_mesos_raw = pl.read_csv(interim_path / 'pib_mesos_projs.csv')
 
 df_pib_mesos_raw.head()
 
-################# PROJEÇÃO PIB DOS MUNICÍPIOS #################
+# ------------------------------------
+# CARREGAMENTO DOS DADOS BRUTOS DOS MUNICÍPIOS E DAS MESORREGIÕES
+# ------------------------------------
 df_munic_raw = pd.read_excel(raw_path / 'pib_munic.xlsx')
 df_mesos_raw = pd.read_excel(raw_path / 'pib_mesos.xlsx')
 
