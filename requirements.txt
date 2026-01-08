@@ -2,3 +2,9 @@ pandas==2.3.1
 plotly==6.2.0
 streamlit==1.47.1
 geopandas==1.1.1
+numpy
+statsmodels
+matplotlib
+polars
+openpyxl
+xlsx2csv
