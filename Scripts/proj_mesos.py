@@ -13,9 +13,9 @@ from warnings import filterwarnings
 filterwarnings("ignore")
 
 project_root = Path().resolve().parent
-raw_path = project_root / 'Dados/Brutos'
-interim_path = project_root / 'Dados/Limpos'
-processed_path = project_root / 'Dados/Processados'
+raw_path = project_root / 'Dados/Brutos' / "valores_nominais"
+interim_path = project_root / 'Dados' / "Limpos" / 'nominal'
+processed_path = project_root / 'Dados' /' Processados' / 'nominal'
 references_path = project_root / 'Referências'
 
 # ------------------------------------

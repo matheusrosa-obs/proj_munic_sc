@@ -13,9 +13,9 @@ from warnings import filterwarnings
 filterwarnings("ignore")
 
 project_root = Path().resolve().parent
-raw_path = project_root / 'Dados/Brutos'
-interim_path = project_root / 'Dados/Limpos'
-processed_path = project_root / 'Dados/Processados'
+raw_path = project_root / 'Dados' / 'Brutos' / 'valores_nominais'
+interim_path = project_root / 'Dados' / 'Limpos' / 'nominal'
+processed_path = project_root / 'Dados' / 'Processados' / 'nominal'
 references_path = project_root / 'Referências'
 
 # ------------------------------------
@@ -86,8 +86,8 @@ proj_mesos = pd.read_excel(interim_path / 'pib_mesos_projs.xlsx')
 proj_mesos = proj_mesos.set_index('ano')
 
 # Cálculo dos logaritmos e diferenças
-proj_mesos = np.log(proj_mesos)
-proj_mesos = proj_mesos.diff()
+# proj_mesos = np.log(proj_mesos)
+# proj_mesos = proj_mesos.diff()
 
 proj_mesos = proj_mesos[(proj_mesos.index >= 2003) & (proj_mesos.index <= 2030)]
 
